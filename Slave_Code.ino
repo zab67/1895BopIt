@@ -3,7 +3,22 @@
 #include <MPU6050.h>
 MPU6050 mpu;
 SoftwareSerial BTSerial(10,9); //Setup for Slave - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
-int buttonState = 0;  // variable for reading the pushbutton status
+int XState, OState,SquareState,TriangleState,UpState,DownState,LeftState,RightState = 0;
+  // variable for reading the pushbutton status
+
+//Acceloremeter - A
+
+//X - X
+//O - O
+//Square - S
+//Triangle - T
+
+//Up - U
+//Down - D
+//Left - L
+//Right - R
+
+
 void setup() 
 {
   Serial.begin(38400);
@@ -17,7 +32,18 @@ void setup()
   checkSettings();
 
   BTSerial.begin(9600);
+
+  pinMode(0, INPUT); // Right
+  pinMode(1, INPUT); // UP
+  pinMode(2, INPUT); // Left
+  pinMode(3, INPUT); // Down
+  pinMode(4, INPUT); // X
+  pinMode(5, INPUT); // O
+  pinMode(6, INPUT); // Triangle
+  pinMode(7, INPUT); // Square
+
   pinMode(8, INPUT);
+
 }
 
 void loop() 
@@ -27,7 +53,7 @@ void loop()
   Vector normAccel = mpu.readNormalizeAccel();
   if((normAccel.XAxis >= 1) or (normAccel.YAxis >= 1))
   {
-    BTSerial.write("1");
+    BTSerial.write("A");
     delay(170);
   }
   Serial.print(normAccel.XAxis);
@@ -35,10 +61,59 @@ void loop()
   Serial.println(normAccel.ZAxis);
   delay(100);
 
-  buttonState = digitalRead(8);
-  if(buttonState == 1)
+  RightState = digitalRead(0);
+  if(RightState == 1)
   {
-    BTSerial.write("1");
+    BTSerial.write("R");
+    delay(170);
+  }
+
+  UpState = digitalRead(1);
+  if(UpState == 1)
+  {
+    BTSerial.write("U");
+    delay(170);
+  }
+
+  LeftState = digitalRead(2);
+  if(LeftState == 1)
+  {
+    BTSerial.write("L");
+    delay(170);
+  }
+
+  DownState = digitalRead(3);
+  if(DownState == 1)
+  {
+    BTSerial.write("D");
+    delay(170);
+  }
+  
+  XState = digitalRead(4);
+  if(XState == 1)
+  {
+    BTSerial.write("X");
+    delay(170);
+  }
+
+  OState = digitalRead(5);
+  if(OState == 1)
+  {
+    BTSerial.write("O");
+    delay(170);
+  }
+
+  TriangleState = digitalRead(6);
+  if(TriangleState == 1)
+  {
+    BTSerial.write("T");
+    delay(170);
+  }
+
+  SquareState = digitalRead(7);
+  if(SquareState == 1)
+  {
+    BTSerial.write("S");
     delay(170);
   }
 }
