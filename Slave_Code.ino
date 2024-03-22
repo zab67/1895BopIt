@@ -3,8 +3,9 @@
 #include <MPU6050.h>
 MPU6050 mpu;
 SoftwareSerial BTSerial(10,9); //Setup for Slave - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
-int XState, OState,SquareState,TriangleState,UpState,DownState,LeftState,RightState = 0;
-  // variable for reading the pushbutton status
+int XState, OState,SquareState,TriangleState,UpState,DownState,LeftState,RightState, testState = 0;
+String output = "";
+// variable for reading the pushbutton status
 
 //Acceloremeter - A
 
@@ -23,6 +24,7 @@ void setup()
 {
   Serial.begin(38400);
 
+  //Init MPU6050
   Serial.println("Initialize MPU6050");
   while(!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
   {
@@ -40,82 +42,80 @@ void setup()
   pinMode(4, INPUT); // X
   pinMode(5, INPUT); // O
   pinMode(6, INPUT); // Triangle
-  pinMode(7, INPUT); // Square
+  pinMode(7, INPUT); // Square - Testing too
 
-  pinMode(8, INPUT);
-
+  pinMode(8, INPUT); //For testing
 }
 
 void loop() 
 {
+  for(int i = 0; i < 30000; i++) //Change size of i based off game timer
+  {
+    // Vector normAccel = mpu.readNormalizeAccel();
+    // if((normAccel.XAxis >= 1) or (normAccel.YAxis >= 1))
+    // {
+    //   output += "A";
+    // }
 
-  Vector rawAccel = mpu.readRawAccel();
-  Vector normAccel = mpu.readNormalizeAccel();
-  if((normAccel.XAxis >= 1) or (normAccel.YAxis >= 1))
-  {
-    BTSerial.write("A");
-    delay(170);
-  }
-  Serial.print(normAccel.XAxis);
-  Serial.print(normAccel.YAxis);
-  Serial.println(normAccel.ZAxis);
-  delay(100);
+    // RightState = digitalRead(0);
+    // if(RightState == 1)
+    // {
+    //   output += "R";
+    // }
 
-  RightState = digitalRead(0);
-  if(RightState == 1)
-  {
-    BTSerial.write("R");
-    delay(170);
-  }
+    // UpState = digitalRead(1);
+    // if(UpState == 1)
+    // {
+    //   output += "U";
+    // }
 
-  UpState = digitalRead(1);
-  if(UpState == 1)
-  {
-    BTSerial.write("U");
-    delay(170);
-  }
+    // LeftState = digitalRead(2);
+    // if(LeftState == 1)
+    // {
+    //   output += "L";
+    // }
 
-  LeftState = digitalRead(2);
-  if(LeftState == 1)
-  {
-    BTSerial.write("L");
-    delay(170);
-  }
+    // DownState = digitalRead(3);
+    // if(DownState == 1)
+    // {
+    //   output += "D";
+    // }
+    
+    // XState = digitalRead(4);
+    // if(XState == 1)
+    // {
+    //   output += "X";
+    // }
 
-  DownState = digitalRead(3);
-  if(DownState == 1)
-  {
-    BTSerial.write("D");
-    delay(170);
-  }
-  
-  XState = digitalRead(4);
-  if(XState == 1)
-  {
-    BTSerial.write("X");
-    delay(170);
-  }
+    // OState = digitalRead(5);
+    // if(OState == 1)
+    // {
+    //   output += "O";
+    // }
 
-  OState = digitalRead(5);
-  if(OState == 1)
-  {
-    BTSerial.write("O");
-    delay(170);
-  }
+    // TriangleState = digitalRead(6);
+    // if(TriangleState == 1)
+    // {
+    //   output += "T";
+    // }
 
-  TriangleState = digitalRead(6);
-  if(TriangleState == 1)
-  {
-    BTSerial.write("T");
-    delay(170);
-  }
+    SquareState = digitalRead(7); //For testing
+    if(SquareState == 1)
+    {
+      output += "S";
+      delay(170);
+    }
 
-  SquareState = digitalRead(7);
-  if(SquareState == 1)
-  {
-    BTSerial.write("S");
-    delay(170);
+    testState = digitalRead(8);
+    if(testState == 1)
+    {
+      output += "1";
+      delay(170);
+    }
   }
+  BTSerial.print(output);
+  delay(170);
+  output = "";
 }
 
 void checkSettings()
