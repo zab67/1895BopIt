@@ -5,6 +5,8 @@ MPU6050 mpu;
 SoftwareSerial BTSerial(10,9); //Setup for Slave - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
 int XState, OState,SquareState,TriangleState,UpState,DownState,LeftState,RightState, testState = 0;
 String output = "";
+String bit = "";
+int multiplier = 1;
 // variable for reading the pushbutton status
 
 //Acceloremeter - A
@@ -49,7 +51,13 @@ void setup()
 
 void loop() 
 {
-  for(int i = 0; i < 30000; i++) //Change size of i based off game timer
+  if(BTSerial.available() > 0)
+  {
+    bit = BTSerial.read();
+    multiplier = bit.toInt() - 48;
+    delay(100);
+  }
+  for(long i = 0; i < 715000-(50000*multiplier); i++) //Change size of i based off game timer - 1=10s, 2=9.3s...
   {
     // Vector normAccel = mpu.readNormalizeAccel();
     // if((normAccel.XAxis >= 1) or (normAccel.YAxis >= 1))
