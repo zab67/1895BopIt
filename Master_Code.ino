@@ -1,5 +1,7 @@
 #include <SoftwareSerial.h>
+#include <LiquidCrystal_I2C.h>
 SoftwareSerial BTSerial(10,9); //Setup for Master - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
+LiquidCrystal_I2C lcd(0x20, 20, 4);
 
 void setup() {
   // put your setup code here, to run once:
@@ -10,8 +12,11 @@ void setup() {
   int randNum;
   randomSeed(203847502347502);// random long as a seed
   Serial.begin(38400);
-  BTSerial.begin(9600); 
-
+  BTSerial.begin(9600); //For Bluetooth Comm.
+  //Initalize LCD Screen
+  lcd.init();
+  lcd.backlight();
+  lcd.home();
 }
  
 static int maxScore = 100;
@@ -68,6 +73,7 @@ bool rageIt() {
     {
        if(BTSerial.available() > 0)
       {
+        delay(100);
         command = BTSerial.readString()
       }
     }
