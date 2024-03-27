@@ -5,32 +5,62 @@ LiquidCrystal_I2C lcd(0x20, 20, 4);
 
 void setup() {
   // put your setup code here, to run once:
-  time = maxTime;
+  static int maxScore = 100; // max score of 100 points
+  static int maxTime = 10; // max time of 10 seconds to perform task
+
   float time;
+  time = maxTime;
+
   int score = 0;
+
   String command = "";
-  int randNum;
+
+  int taskRandNum;
   randomSeed(203847502347502);// random long as a seed
+
   Serial.begin(38400);
   BTSerial.begin(9600); //For Bluetooth Comm.
+
   //Initalize LCD Screen
   lcd.init();
   lcd.backlight();
   lcd.home();
 }
- 
-static int maxScore = 100;
-static float maxTime = 4;
-static float timeDecrement = 0.03;
+
+  int multiplier = 0;
+
+  String combos[10] = { //10 random combinations
+    "88887984838483798884",
+    "83847988798383847988",
+    "79887988838384838384",
+    "88848884838488848884",
+    "79838384888883797979",
+    "79798388848883798888",
+    "88887983798884847983",
+    "88838479887983847979",
+    "83838388848379838884",
+    "79798884837984838383"
+  }
+
+//ASCII Reference:
+//A = 65
+//R = 82
+//U = 85
+//L = 76
+//D = 68
+//X = 88
+//O = 79
+//T = 84
+//S = 83
 
 
 void loop() {
 
-    randNum = random(1,4);// generates a random number from {1,2,3}
+    taskRandNum = random(1,4);// generates a random number from {1,2,3}
 
-    if(randNum == 1)
+    if(taskRandNum == 1)
     {
-      displayTask("Rage It!");
+      display("Rage It!");
       if(!rageIt())
       {
         gameOver();
@@ -38,9 +68,9 @@ void loop() {
       command = "";
 
     }
-    else if(randNum == 2)
+    else if(taskRandNum == 2)
     {
-      displayTask("Shoot It!");
+      display("Shoot It!");
       if(!shootIt())
       {
         gameOver();
@@ -48,9 +78,9 @@ void loop() {
       command = "";
 
     }
-    else if(randNum == 3)
+    else if(taskRandNum == 3)
     {
-      displayTask("Combo It!");
+      display("Combo It!");
       if(!comboIt())
       {
         gameOver();
@@ -64,12 +94,26 @@ void loop() {
       command = "";
     }
 
-  time -= timeDecrement
+    score++;
+
+    if(score >= maxScore) // If user has won the game
+    {
+      gameOver()
+    }
+
+    if (score % 10 == 0) // only if we've reached a new task set, send the multiplier
+    {
+      BTSerial.print(multiplier);
+      delay(100);
+      multiplier++;
+    }
+    
+
 }
 
 bool rageIt() {
 
-    for(int i = 0; i < time; i++)
+    for(int i = 0; i < 715000 - 50000*multiplier; i++)
     {
        if(BTSerial.available() > 0)
       {
@@ -78,31 +122,94 @@ bool rageIt() {
       }
     }
 
+    String byte = "";
+
     for(int i = 0; i < command.length()-1; i=i+2) // loop through the command all the way until the second to last char
     {
-      if(command.substring(i,i+2) != "65")// loop through each two char substring, checking that all equal 65 which is A
+      byte += command[i]; // add first digit of the ASCII number
+      byte += command[i+1]; // add second digit of the ASCII number
+
+      if(byte != "65")// loop through each byte, checking that all equal 65 which is A
       {
-        return false;
+        return false; // task failed
       } 
+
+      byte = ""; // clear byte
     }
-    return true;
+
+    return true; // task passed
 }
 
 bool comboIt() {
 
+    combo = combos[random(0,10)] // select a random combo
+    displayCombo(combo); // display combo
+
+    for(int i = 0; i < 715000 - 50000*multiplier; i++)
+    {
+       if(BTSerial.available() > 0)
+      {
+        delay(100);
+        command = BTSerial.readString()
+      }
+    }
+    
+    if(command == combo) // if the command from the slave matches
+    {
+      return true; // task passed
+    }
+    return false; // task failed
 }
+
 
 bool shootIt() {
+    for(int i = 0; i < 715000 - 50000*multiplier; i++)
+    {
+       if(BTSerial.available() > 0)
+      {
+        delay(100);
+        command = BTSerial.readString()
+      }
+    }
+
+
 
 }
 
-void displayTask(){
+void display(String str){
 
+
+}
+
+void displayShoot(){
+
+}
+
+void displayCombo(String combo){
+    String outputStr = "";
+    String byte = "";
+
+    for(int i = 0; i < combo.length()-1; i=i+2) // loop through the combo all the way until the second to last char
+    {
+      byte += combo[i]; // add first digit of the ASCII number
+      byte += combo[i+1]; // add second digit of the ASCII number
+
+      if(byte == 88)//X
+      {
+        outputStr += "X";
+      } //TODO complete this if statement with what to output on the LCD
+      //Zack said something about custom symbols so maybe we can use those?
+
+      display(outputStr);
+
+}
+
+void displayScore(){
 
 }
 
 void gameOver(){
 
 
-}
 
+}
