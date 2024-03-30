@@ -2,8 +2,8 @@
 #include <Wire.h>
 #include <MPU6050.h>
 MPU6050 mpu;
-SoftwareSerial BTSerial(10,9); //Setup for Slave - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
-int XState, OState,SquareState,TriangleState,UpState,DownState,LeftState,RightState, testState = 0;
+SoftwareSerial BTSerial(10,11); //Setup for Slave - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
+int XState, OState,SquareState,TriangleState,UpState,DownState,LeftState,RightState;
 String output = "";
 String bit = "";
 int multiplier = 1;
@@ -44,9 +44,7 @@ void setup()
   pinMode(4, INPUT); // X
   pinMode(5, INPUT); // O
   pinMode(6, INPUT); // Triangle
-  pinMode(7, INPUT); // Square - Testing too
-
-  pinMode(8, INPUT); //For testing
+  pinMode(7, INPUT); // Square
 }
 
 void loop() 
@@ -57,67 +55,68 @@ void loop()
     multiplier = bit.toInt() - 48;
     delay(100);
   }
-  for(long i = 0; i < 715000-(50000*multiplier); i++) //Change size of i based off game timer - 1=10s, 2=9.3s...
+  for(long i = 0; i < 300; i++) //Change size of i based off game timer - 1=10s, 2=9.3s...  715000-(50000*multiplier)
   {
-    // Vector normAccel = mpu.readNormalizeAccel();
-    // if((normAccel.XAxis >= 1) or (normAccel.YAxis >= 1))
-    // {
-    //   output += "A";
-    // }
+    Vector normAccel = mpu.readNormalizeAccel();
+    if((normAccel.YAxis > 19) and (normAccel.XAxis > 19))
+    {
+      output += "A";
+      delay(170);
+    }
 
-    // RightState = digitalRead(0);
-    // if(RightState == 1)
-    // {
-    //   output += "R";
-    // }
+    RightState = digitalRead(0);
+    if(RightState == 1)
+    {
+      output += "R";
+      delay(170);
+    }
 
     // UpState = digitalRead(1);
     // if(UpState == 1)
     // {
     //   output += "U";
+    //   delay(170);
     // }
 
-    // LeftState = digitalRead(2);
-    // if(LeftState == 1)
-    // {
-    //   output += "L";
-    // }
-
-    // DownState = digitalRead(3);
-    // if(DownState == 1)
-    // {
-    //   output += "D";
-    // }
-    
-    // XState = digitalRead(4);
-    // if(XState == 1)
-    // {
-    //   output += "X";
-    // }
-
-    // OState = digitalRead(5);
-    // if(OState == 1)
-    // {
-    //   output += "O";
-    // }
-
-    // TriangleState = digitalRead(6);
-    // if(TriangleState == 1)
-    // {
-    //   output += "T";
-    // }
-
-    SquareState = digitalRead(7); //For testing
-    if(SquareState == 1)
+    LeftState = digitalRead(2);
+    if(LeftState == 1)
     {
-      output += "S";
+      output += "L";
       delay(170);
     }
 
-    testState = digitalRead(8);
-    if(testState == 1)
+    DownState = digitalRead(3);
+    if(DownState == 1)
     {
-      output += "1";
+      output += "D";
+      delay(170);
+    }
+    
+    XState = digitalRead(4);
+    if(XState == 1)
+    {
+      output += "X";
+      delay(170);
+    }
+
+    OState = digitalRead(5);
+    if(OState == 1)
+    {
+      output += "O";
+      delay(170);
+    }
+
+    TriangleState = digitalRead(6);
+    if(TriangleState == 1)
+    {
+      output += "T";
+      delay(170);
+    }
+
+    SquareState = digitalRead(7);
+    if(SquareState == 1)
+    {
+      output += "S";
       delay(170);
     }
   }
