@@ -1,21 +1,21 @@
 #include <SoftwareSerial.h>
 #include <LiquidCrystal_I2C.h>
-SoftwareSerial BTSerial(10,9); //Setup for Master - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
+SoftwareSerial BTSerial(10,11); //Setup for Master - RX, TX | for pins RX to TX on HC-05 and TX to RX on HC-05
 LiquidCrystal_I2C lcd(0x20, 20, 4);
 
-void setup() {
-  // put your setup code here, to run once:
-  static int maxScore = 100; // max score of 100 points
-  static int maxTime = 10; // max time of 10 seconds to perform task
+int score = 0;
+String command = "";
+int taskRandNum;
+float time;
+static int maxScore = 100; // max score of 100 points
+static int maxTime = 10; // max time of 10 seconds to perform task
 
-  float time;
+String testA = "";
+
+void setup() 
+{
   time = maxTime;
 
-  int score = 0;
-
-  String command = "";
-
-  int taskRandNum;
   randomSeed(203847502347502);// random long as a seed
 
   Serial.begin(38400);
@@ -40,7 +40,7 @@ void setup() {
     "88838479887983847979",
     "83838388848379838884",
     "79798884837984838383"
-  }
+  };
 
 //ASCII Reference:
 //A = 65
@@ -54,71 +54,77 @@ void setup() {
 //S = 83
 
 
-void loop() {
+void loop() 
+{
+  if(BTSerial.available() > 0)
+  {
+    testA = BTSerial.read();
+    delay(100);
+    lcd.print(testA);
+    delay(200);
+  }
+  testA = "";
+  
 
-    taskRandNum = random(1,4);// generates a random number from {1,2,3}
 
-    if(taskRandNum == 1)
-    {
-      display("Rage It!");
-      if(!rageIt())
-      {
-        gameOver();
-      }
-      command = "";
+    // taskRandNum = random(1,4);// generates a random number from {1,2,3}
+    // if(taskRandNum == 1)
+    // {
+    //   display("Rage It!");
+    //   if(!rageIt())
+    //   {
+    //     gameOver();
+    //   }
+    //   command = "";
+    // }
+    // else if(taskRandNum == 2)
+    // {
+    //   display("Shoot It!");
+    //   if(!shootIt())
+    //   {
+    //     gameOver();
+    //   }
+    //   command = "";
+    // }
+    // else if(taskRandNum == 3)
+    // {
+    //   display("Combo It!");
+    //   if(!comboIt())
+    //   {
+    //     gameOver();
+    //   }
+    //   command = "";
+    // }
+    // else
+    // {
+    //   Serial.println("Random Num Error!");
+    //   command = "";
+    // }
 
-    }
-    else if(taskRandNum == 2)
-    {
-      display("Shoot It!");
-      if(!shootIt())
-      {
-        gameOver();
-      }
-      command = "";
+    // score++;
 
-    }
-    else if(taskRandNum == 3)
-    {
-      display("Combo It!");
-      if(!comboIt())
-      {
-        gameOver();
-      }
-      command = "";
+    // if(score >= maxScore) // If user has won the game
+    // {
+    //   gameOver();
+    // }
 
-    }
-    else
-    {
-      Serial.println("Random Num Error!")
-      command = "";
-    }
-
-    score++;
-
-    if(score >= maxScore) // If user has won the game
-    {
-      gameOver()
-    }
-
-    if (score % 10 == 0) // only if we've reached a new task set, send the multiplier
-    {
-      BTSerial.print(multiplier);
-      delay(100);
-      multiplier++;
-    }
-    
-
+    // if (score % 10 == 0) // only if we've reached a new task set, send the multiplier
+    // {
+    //   BTSerial.print(multiplier);
+    //   delay(100);
+    //   multiplier++;
+    // }
 }
 
-bool rageIt() {
+bool rageIt() 
+{
 
     for(int i = 0; i < 715000 - 50000*multiplier; i++)
     {
        if(BTSerial.available() > 0)
       {
         delay(100);
-        command = BTSerial.readString()
+        command = BTSerial.readString();
       }
     }
 
@@ -140,9 +146,10 @@ bool rageIt() {
     return true; // task passed
 }
 
-bool comboIt() {
-
-    combo = combos[random(0,10)] // select a random combo
+bool comboIt() 
+{
+    String combo = "";
+    combo = combos[random(0,10)]; // select a random combo
     displayCombo(combo); // display combo
 
     for(int i = 0; i < 715000 - 50000*multiplier; i++)
@@ -150,10 +157,9 @@ bool comboIt() {
        if(BTSerial.available() > 0)
       {
         delay(100);
-        command = BTSerial.readString()
+        command = BTSerial.readString();
       }
     }
-    
     if(command == combo) // if the command from the slave matches
     {
       return true; // task passed
@@ -162,30 +168,34 @@ bool comboIt() {
 }
 
 
-bool shootIt() {
+bool shootIt() 
+{
     for(int i = 0; i < 715000 - 50000*multiplier; i++)
     {
        if(BTSerial.available() > 0)
       {
         delay(100);
-        command = BTSerial.readString()
+        command = BTSerial.readString();
       }
     }
-
-
-
 }
 
-void display(String str){
-
-
+void display(String str)
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(str);
+  //delay(2000);
 }
 
-void displayShoot(){
+void displayShoot()
+{
 
+  return;
 }
 
-void displayCombo(String combo){
+void displayCombo(String combo)
+{
     String outputStr = "";
     String byte = "";
 
@@ -201,15 +211,16 @@ void displayCombo(String combo){
       //Zack said something about custom symbols so maybe we can use those?
 
       display(outputStr);
-
+    }
 }
 
-void displayScore(){
-
+void displayScore()
+{
+  return;
 }
 
-void gameOver(){
-
-
-
+void gameOver()
+{
+  return;
 }
+
