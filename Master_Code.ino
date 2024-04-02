@@ -15,17 +15,12 @@ float time;
 static int maxScore = 100; // max score of 100 points
 static int maxTime = 10; // max time of 10 seconds to perform task
 int multiplier = 0;
-String combos[10] = { //10 random combinations
-  "88887984838483798884",
-  "83847988798383847988",
-  "79887988838384838384",
-  "88848884838488848884",
-  "79838384888883797979",
-  "79798388848883798888",
-  "88887983798884847983",
-  "88838479887983847979",
-  "83838388848379838884",
-  "79798884837984838383"
+int timeInterval = 10000;
+String combos[4] = { //10 random combinations
+  "888879",
+  "688479",
+  "798879",
+  "888488",
 };
 
 String directions[3] = {"D", "L", "R"};
@@ -34,19 +29,19 @@ String directions[3] = {"D", "L", "R"};
 //A = 65
 //R = 82
 //U = 85
-//L = 76
-//D = 68
-//X = 88
+//L = 76 
+//D = 68 -> 83
+//X = 88 -> 84
 //O = 79
-//T = 84
-//S = 83
+//T = 84 -> 88
+//S = 83 -> 68
 
 //done
 void display(String str){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(str);
-  //delay(2000);
+  delay(1500);
 }
 
 //done
@@ -58,8 +53,8 @@ void displayCombo(String combo){
     {
       byte += combo[i]; // add first digit of the ASCII number
       byte += combo[i+1]; // add second digit of the ASCII number
-
-      if(byte == "88")
+      lcd.setCursor(i,2);
+      if(byte == "84")
       {
         lcd.print("X");
       } 
@@ -67,31 +62,34 @@ void displayCombo(String combo){
       {
         lcd.print("O");
       }
-      else if(byte == "84")
+      else if(byte == "88")
       {
-        lcd.print(1); // Triangle
+        lcd.write(1); // Triangle
       }
-      else if(byte == "83")
+      else if(byte == "68")
       {
-        lcd.print(0); // Square
+        lcd.write(0); // Square
       }
+      byte = "";
     }
+
+
   
 }
 
 //done
 void displayShoot(String direction){
-  if(direction == "U")
+  if(direction == "D")
   {
-    lcd.print(2); // Up
+    lcd.write(2); // Up
   }
   else if(direction == "L")
   {
-    lcd.print(3); // Left
+    lcd.write(3); // Left
   }
   else if(direction == "R")
   {
-    lcd.print(4); // Right
+    lcd.write(4); // Right
   }
   else
   {
@@ -101,7 +99,8 @@ void displayShoot(String direction){
 }
 
 //done
-void displayScore(){
+void displayScore()
+{
   String score_string = String(score);
   display("Score: " + score_string);
 }
@@ -110,27 +109,31 @@ void displayScore(){
 void startGame(){
 
   String anyButton = "";
-
+  display("Press any button to start!");
   while(true)
   {
-    display("Press any button to start!");
     if (BTSerial.available() > 0)
     {
-      anyButton = BTSerial.read();
+      String dummy = "";
+      dummy = BTSerial.read();
+      break;
+      // anyButton = BTSerial.read();
+      // lcd.print(anyButton);
 
-      if((anyButton.indexOf("65") > 0) || (anyButton.indexOf("82") > 0) || (anyButton.indexOf("85") > 0) || (anyButton.indexOf("76") > 0) || 
-         (anyButton.indexOf("68") > 0) || (anyButton.indexOf("88") > 0) || (anyButton.indexOf("79") > 0) || (anyButton.indexOf("84") > 0) ||
-         (anyButton.indexOf("83") > 0))
-         {
-          return;
-         }
+      // if((anyButton.indexOf("65") > 0) || (anyButton.indexOf("82") > 0) || (anyButton.indexOf("85") > 0) || (anyButton.indexOf("76") > 0) || 
+      //    (anyButton.indexOf("68") > 0) || (anyButton.indexOf("88") > 0) || (anyButton.indexOf("79") > 0) || (anyButton.indexOf("84") > 0) ||
+      //    (anyButton.indexOf("83") > 0))
+      //    {
+      //     break;
+      //    }
     }
   }
 
 }
 
 //done
-void gameOver(){
+void gameOver()
+{
 
   if (score >= maxScore) // user has won
   {
@@ -150,7 +153,7 @@ void gameOver(){
 void setup() {
   // put your setup code here, to run once:
   time = maxTime;
-  randomSeed(203847502347502);// random long as a seed
+  randomSeed(187263916987);// random long as a seed
 
   Serial.begin(38400);
   BTSerial.begin(9600); //For Bluetooth Comm.
@@ -215,9 +218,9 @@ void loop() {
 
     if (score % 10 == 0) // only if we've reached a new task set, send the multiplier
     {
-      BTSerial.print(multiplier);
-      delay(100);
-      multiplier++;
+      // BTSerial.print(multiplier);
+      
+      timeInterval -= 700;
     }
     
 }
@@ -226,13 +229,17 @@ void loop() {
 bool rageIt() {
 
     String command = "";
-    for(int i = 0; i < 715000 - 50000*multiplier; i++)
+    unsigned long startTime = millis();
+    unsigned long currentTime = millis();
+    while(currentTime - startTime < timeInterval)
     {
-       if(BTSerial.available() > 0)
+      if(BTSerial.available() > 0)
       {
         delay(100);
-        command = BTSerial.readString();
+        command = BTSerial.read();
+        // lcd.print(command);
       }
+      currentTime = millis();
     }
 
     String byte = "";
@@ -241,6 +248,8 @@ bool rageIt() {
     {
       byte += command[i]; // add first digit of the ASCII number
       byte += command[i+1]; // add second digit of the ASCII number
+
+      lcd.print(byte);
 
       if(byte != "65")// loop through each byte, checking that all equal 65 which is A
       {
@@ -258,17 +267,29 @@ bool comboIt() {
 
   String combo = "";
   String command = "";
+  String lastInput = "";
+  // lcd.clear();
 
-    combo = combos[random(0,10)]; // select a random combo
+    combo = combos[random(0,4)]; // select a random combo
     displayCombo(combo); // display combo
+    unsigned long startTime = millis();
+    unsigned long currentTime = millis();
 
-    for(int i = 0; i < 715000 - 50000*multiplier; i++)
+    while(currentTime - startTime < timeInterval)
     {
        if(BTSerial.available() > 0)
       {
-        delay(100);
-        command = BTSerial.readString();
+        if(lastInput != BTSerial.peek())
+        {
+          delay(100);
+          command += BTSerial.read();
+          // lcd.print(command);
+
+        }
+        lastInput = BTSerial.peek();
+       
       }
+      currentTime = millis();
     }
     lcd.clear(); // clear the screen from displayCombo
     
@@ -283,30 +304,32 @@ bool comboIt() {
 bool shootIt() {
     String randDirection = "";
     String command = "";
+    String lastInput = "";
     randDirection = directions[random(0,3)];
     displayShoot(randDirection);
-    String correctShots[3] = {"6883", "7683", "8283"}; //down+square, left+square, right+square
+    String correctShots[3] = {"8368", "7668", "8268"}; //down+square, left+square, right+square //corrected for zacks stupidity
+    String temp = "";
+    unsigned long startTime = millis();
+    unsigned long currentTime = millis();
 
-    for(int i = 0; i < 715000 - 50000*multiplier; i++)
+    while(currentTime - startTime < timeInterval)
     {
-       if(BTSerial.available() > 0)
+      if(BTSerial.available() > 0)
       {
-        delay(100);
-        command = BTSerial.readString();
+        if(lastInput != BTSerial.peek())
+        {
+          delay(100);
+          command += BTSerial.read();
+        }
+        lastInput = BTSerial.peek();
+        
       }
+      currentTime = millis();
     }
+    // lcd.print(command);
 
     return (((randDirection == "D") && (command == correctShots[0])) || 
             ((randDirection == "L") && (command == correctShots[1])) || 
             ((randDirection == "R") && (command == correctShots[2])));
 
 }
-
-
-
-
-
-
-
-
-
