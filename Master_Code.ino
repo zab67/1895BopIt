@@ -76,11 +76,7 @@ void displayCombo(String combo){
         lcd.print(0); // Square
       }
     }
-
-
-
-
-
+  
 }
 
 //done
@@ -101,7 +97,7 @@ void displayShoot(String direction){
   {
     Serial.println("Shoot it Direction Error!");
   }
-  
+
 }
 
 //done
@@ -224,7 +220,6 @@ void loop() {
       multiplier++;
     }
     
-
 }
 
 //done
